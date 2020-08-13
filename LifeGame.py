@@ -1,9 +1,9 @@
 import console, time
-from lib.Component import *
+from lib.Component import Cell, World
+from lib.GameControl import GameControl
 
-s = [38, 38]#input().rstrip().split(' ')
-height = int(s[0])
-width = int(s[1])
+height = 38
+width = 38
 cellCount = height * width
 
 world = World(height, width)
@@ -17,19 +17,36 @@ for r in range(height):
 		world.setCell(cell)
 		cell.setNeighborhood(height, width)
 		index = index + 1
-world.setInitAlive()
-#world.setInitGliderGun()
-#world.setInitBlinker()
 
-console.set_font('Menlo',8)
-print(world.show())
+methodList = world.getGenesisMethodList()
+print('選択する初期配置の番号を入力してください')
+for m in methodList.items():
+	print(m[0], ':', m[1])
+methodNo = int(input().rstrip())
+method = methodList.get(methodNo)
 
-for i in range(300):
-	world.nextEra()
-	world.progress()
-	console.clear()
-	print(str(world.show()))
-	print('count:',i)
-	time.sleep(0.1)
-
-console.set_font()
+genResult = world.genesis(method)
+try:
+	if genResult != 0:
+		if len(genResult) == 0:
+			raise Exception('初期配置ファイルが存在しません')
+		print('選択するファイルの番号を入力してください')
+		for file in genResult.items():
+			print(file[0], ':', file[1])
+		fileNo = int(input().rstrip())
+		fileName = genResult.get(fileNo)
+		world.genesis(method, fileName)
+	
+	console.set_font('Menlo',8)
+	
+	for i in range(300):
+		world.nextEra()
+		world.progress()
+		console.clear()
+		print(str(world.show()))
+		print('count:',i)
+		time.sleep(0.1)
+except Exception as e:
+	print(e)
+finally:
+	console.set_font()

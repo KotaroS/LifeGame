@@ -1,3 +1,4 @@
+from .FileUtil import FileUtil
 import random
 
 class Cell:
@@ -16,7 +17,7 @@ class Cell:
 		self.alive = 1
 	def death(self):
 		self.alive = 0
-	def nextGeneration(self, neighbours):
+	def setNextAlive(self, neighbours):
 		if self.isAlive():
 			if neighbours <= 1 or neighbours >= 4:
 				self.nextAlive = 0
@@ -113,27 +114,53 @@ class World:
 		self.cells[key] = cell
 	def getCell(self, name):
 		return self.cells.get(name)
-	def getNext(self, cell):
+	def getNeighborAlive(self, cell):
 		env = 0
 		neighborhoodLst = cell.getNeighborhood()
 		for n in neighborhoodLst:
 			if n != -1:
 				if self.cells.get(n).isAlive():
 					env = env + 1
-		cell.nextGeneration(env)
+		cell.setNextAlive(env)
 	def nextEra(self):
 		for cell in self.cells.values():
-			self.getNext(cell)
+			self.getNeighborAlive(cell)
 	def progress(self):
 		for cell in self.cells.values():
 			cell.progress()
-	def setInitAlive(self):
-		for cell in self.cells.values():
-			if 0.5 < random.random():
-				cell.birth()
-	def setInitGliderGun(self):
+	
+	def getGenesisMethodList(self):
+		result = {1:'random', 2:'glider', 3:'blinker',4:'file'}
+		return result
+	def genesis(self, method, fileName = ''):
+		recipe = []
+		if 'random' == method:
+			recipe = self.getRandomSet(0.5)
+		elif 'glider' == method:
+			recipe = self.getGliderGunset()
+		elif 'blinker' == method:
+			recipe = self.getBlinkerSet()
+		elif 'file' == method and fileName == '':
+			return FileUtil.getFileList()
+		elif 'file' == method and fileName != '':
+			recipe = FileUtil.loadInit(fileName)
+		else:
+			recipe = self.getRandomSet(0.9)
 		index = 0
-		lst = [63, 
+		for cell in self.cells.values():
+			if index in recipe:
+				cell.birth()
+			index += 1
+		return 0
+	def getRandomSet(self, threshold):
+		result = []
+		for cell in range(len(self.cells)):
+			if threshold > random.random():
+				result.append(cell)
+		FileUtil.saveInit(result)
+		return result
+	def getGliderGunset(self):
+		return  [63, 
 		99, 101, 
 		127, 128, 135, 136, 149, 150,
 		164, 168, 173, 174, 187, 188,
@@ -142,17 +169,8 @@ class World:
 		277, 283, 291,
 		316, 320,
 		355, 356]
-		for cell in self.cells.values():
-			if index in lst:
-				cell.birth()
-			index += 1
-	def setInitBlinker(self):
-		index = 0
-		lst = [243, 244, 245]
-		for cell in self.cells.values():
-			if index in lst:
-				cell.birth()
-			index += 1
+	def getBlinkerSet(self):
+		return  [243, 244, 245]
 	def show(self):
 		visual = []
 		index = 0
