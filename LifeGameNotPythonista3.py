@@ -1,4 +1,5 @@
-import console, time
+import os
+import time
 from lib.Component import Cell, World
 
 height = 38
@@ -36,16 +37,14 @@ try:
 		fileName = genResult.get(fileNo)
 		world.genesis(method, fileName)
 	
-	console.set_font('Menlo',8)
-	
 	for i in range(300):
 		world.nextEra()
 		world.progress()
-		console.clear()
+		os.system('cls')
 		print(str(world.show()))
 		print('count:',i)
-		time.sleep(0.1)
+		time.sleep(0.05)
 except Exception as e:
 	print(e)
 finally:
-	console.set_font()
+	pass
